@@ -124,6 +124,7 @@ def post_pandoc(string, config)
 		s '\verb!p = (n(n-1)/2) * (1/2^160))!', '$p = \frac{n(n-1)}{2} \times \frac{1}{2^{160}}$)'
 		s '2\^{}80', '$2^{80}$'
 		s /\sx\s10\\\^\{\}(\d+)/, '\e{\1}'
+		s /([^\\])\^/, '\1\\^{}'
 
 		# Convert inline-verbatims into \texttt (which is able to wrap)
 		s /\\verb(\W)(.*?)\1/ ,'\\texttt{\2}'
