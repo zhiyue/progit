@@ -70,7 +70,7 @@ O aspecto negativo do SSH é que você não pode permitir acesso anônimo do seu
 
 ### O Protocolo Git ###
 
-O próximo é o protocolo Git. Este é um daemon especial que vem no mesmo pacote que o Git; ele escuta em uma porta dedicada (9418) que provê um serviço similar ao do protocolo SSH, mas absolutamente sem nenhuma autenticação. Para que um repositório seja disponibilizado via protocolo Git, você tem que criar o arquivo `git-export-daemon-ok` — o daemon não disponibilizará um repositório sem este arquivo dentro — mas além disso não há nenhuma segurança. Ou o repositório Git está disponível para todos clonarem ou não. Isto significa que geralmente não existe envio (push) sobre este protocolo. Você pode habilitar o acesso a envio; mas dada a falta de autenticação, se você ativar o acesso de envio, qualquer um na internet que encontre a URL do seu projeto poderia enviar (push) para o seu projeto. É suficiente dizer que isto é raro.
+O próximo é o protocolo Git. Este é um daemon especial que vem no mesmo pacote que o Git; ele escuta em uma porta dedicada (9418) que provê um serviço similar ao do protocolo SSH, mas absolutamente sem nenhuma autenticação. Para que um repositório seja disponibilizado via protocolo Git, você tem que criar o arquivo `git-daemon-export-ok` — o daemon não disponibilizará um repositório sem este arquivo dentro — mas além disso não há nenhuma segurança. Ou o repositório Git está disponível para todos clonarem ou não. Isto significa que geralmente não existe envio (push) sobre este protocolo. Você pode habilitar o acesso a envio; mas dada a falta de autenticação, se você ativar o acesso de envio, qualquer um na internet que encontre a URL do seu projeto poderia enviar (push) para o seu projeto. É suficiente dizer que isto é raro.
 
 #### Os Prós ####
 
@@ -367,7 +367,7 @@ Gitosis requer algumas ferramentas Python, então antes de tudo você precisa in
 
 Depois, você clona e instala Gitosis do site principal do projeto:
 
-    $ git clone git://eagain.net/gitosis.git
+    $ git clone https://github.com/tv42/gitosis.git
     $ cd gitosis
     $ sudo python setup.py install
 
@@ -766,7 +766,7 @@ GitHub também é uma empresa comercial que cobra para contas que mantêm reposi
 
 ### Criando uma Conta de Usuário ###
 
-A primeira coisa que você precisa fazer é criar uma conta de usuário gratuita. Se você visitar a página de Preços e Inscrição em `http://github.com/plans` e clicar no botão "Sign Up" na conta gratuita (ver figura 4-2), você é levado à página de inscrição.
+A primeira coisa que você precisa fazer é criar uma conta de usuário gratuita. Se você visitar a página de Preços e Inscrição em `https://github.com/pricing` e clicar no botão "Sign Up" na conta gratuita (ver figura 4-2), você é levado à página de inscrição.
 
 Insert 18333fig0402.png
 Figure 4-2. A página de planos do GitHub.

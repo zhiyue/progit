@@ -26,7 +26,7 @@ Or you can do this:
 
 	$ git clone file:///opt/git/project.git
 
-Git operates slightly differently if you explicitly specify `file://` at the beginning of the URL. If you just specify the path, Git tries to use hardlinks or directly copy the files it needs. If you specify `file://`, Git fires up the processes that it normally uses to transfer data over a network which is generally a lot less efficient method of transferring the data. The main reason to specify the `file://` prefix is if you want a clean copy of the repository with extraneous references or objects left out — generally after an import from another version-control system or something similar (see Chapter 9 for maintenance tasks). We’ll use the normal path here because doing so is almost always faster.
+Git operates slightly differently if you explicitly specify `file://` at the beginning of the URL. If you just specify the path, and the source and the destination are on the same filesystem, Git tries to hardlink the objects it needs. If they are not on the same filesystem, it will copy the objects it needs using the system's standard copying functionality. If you specify `file://`, Git fires up the processes that it normally uses to transfer data over a network which is generally a lot less efficient method of transferring the data. The main reason to specify the `file://` prefix is if you want a clean copy of the repository with extraneous references or objects left out — generally after an import from another version-control system or something similar (see Chapter 9 for maintenance tasks). We’ll use the normal path here because doing so is almost always faster.
 
 To add a local repository to an existing Git project, you can run something like this:
 
@@ -70,7 +70,7 @@ The negative aspect of SSH is that you can’t serve anonymous access of your re
 
 ### The Git Protocol ###
 
-Next is the Git protocol. This is a special daemon that comes packaged with Git; it listens on a dedicated port (9418) that provides a service similar to the SSH protocol, but with absolutely no authentication. In order for a repository to be served over the Git protocol, you must create the `git-export-daemon-ok` file — the daemon won’t serve a repository without that file in it — but other than that there is no security. Either the Git repository is available for everyone to clone or it isn’t. This means that there is generally no pushing over this protocol. You can enable push access; but given the lack of authentication, if you turn on push access, anyone on the internet who finds your project’s URL could push to your project. Suffice it to say that this is rare.
+Next is the Git protocol. This is a special daemon that comes packaged with Git; it listens on a dedicated port (9418) that provides a service similar to the SSH protocol, but with absolutely no authentication. In order for a repository to be served over the Git protocol, you must create the `git-daemon-export-ok` file — the daemon won’t serve a repository without that file in it — but other than that there is no security. Either the Git repository is available for everyone to clone or it isn’t. This means that there is generally no pushing over this protocol. You can enable push access; but given the lack of authentication, if you turn on push access, anyone on the internet who finds your project’s URL could push to your project. Suffice it to say that this is rare.
 
 #### The Pros ####
 
@@ -117,9 +117,10 @@ In order to initially set up any Git server, you have to export an existing repo
 In order to clone your repository to create a new bare repository, you run the clone command with the `--bare` option. By convention, bare repository directories end in `.git`, like so:
 
 	$ git clone --bare my_project my_project.git
-	Initialized empty Git repository in /opt/projects/my_project.git/
+	Cloning into bare repository 'my_project.git'...
+	done.
 
-The output for this command is a little confusing. Since `clone` is basically a `git init` then a `git fetch`, we see some output from the `git init` part, which creates an empty directory. The actual object transfer gives no output, but it does happen. You should now have a copy of the Git directory data in your `my_project.git` directory.
+You should now have a copy of the Git directory data in your `my_project.git` directory.
 
 This is roughly equivalent to something like
 
@@ -226,7 +227,11 @@ You just append them to your `authorized_keys` file:
 	$ cat /tmp/id_rsa.josie.pub >> ~/.ssh/authorized_keys
 	$ cat /tmp/id_rsa.jessica.pub >> ~/.ssh/authorized_keys
 
-Now, you can set up an empty repository for them by running `git init` with the `--bare` option, which initializes the repository without a working directory:
+Key-based SSH authentication usually enforces security by requiring restricted rights on the involved files. To prevent SSH from refusing to work, type this:
+
+	$ chmod -R go= ~/.ssh
+
+Now, you can set up an empty repository for your users by running `git init` with the `--bare` option, which initializes the repository without a working directory:
 
 	$ cd /opt/git
 	$ mkdir project.git
@@ -287,6 +292,13 @@ What does this `post-update` hook do? It looks basically like this:
 
 	$ cat .git/hooks/post-update
 	#!/bin/sh
+	#
+	# An example hook script to prepare a packed repository for use over
+	# dumb transports.
+	#
+	# To enable this hook, rename this file to "post-update".
+	#
+	
 	exec git-update-server-info
 
 This means that when you push to the server via SSH, Git will run this command to update the files needed for HTTP fetching.
@@ -368,7 +380,7 @@ Gitosis requires some Python tools, so first you have to install the Python setu
 
 Next, you clone and install Gitosis from the project’s main site:
 
-	$ git clone git://eagain.net/gitosis.git
+	$ git clone https://github.com/tv42/gitosis.git
 	$ cd gitosis
 	$ sudo python setup.py install
 
@@ -402,7 +414,7 @@ You’re ready to roll. If you’re set up correctly, you can try to SSH into yo
 
 	$ ssh git@gitserver
 	PTY allocation request failed on channel 0
-	fatal: unrecognized command 'gitosis-serve schacon@quaternion'
+	ERROR:gitosis.serve.main:Need SSH_ORIGINAL_COMMAND in environment.
 	  Connection to gitserver closed.
 
 That means Gitosis recognized you but shut you out because you’re not trying to do any Git commands. So, let’s do an actual Git command — you’ll clone the Gitosis control repository:
@@ -426,28 +438,28 @@ If you look at the `gitosis.conf` file, it should only specify information about
 	[gitosis]
 
 	[group gitosis-admin]
-	writable = gitosis-admin
 	members = scott
+	writable = gitosis-admin
 
 It shows you that the 'scott' user — the user with whose public key you initialized Gitosis — is the only one who has access to the `gitosis-admin` project.
 
 Now, let’s add a new project for you. You’ll add a new section called `mobile` where you’ll list the developers on your mobile team and projects that those developers need access to. Because 'scott' is the only user in the system right now, you’ll add him as the only member, and you’ll create a new project called `iphone_project` to start on:
 
 	[group mobile]
-	writable = iphone_project
 	members = scott
+	writable = iphone_project
 
 Whenever you make changes to the `gitosis-admin` project, you have to commit the changes and push them back up to the server in order for them to take effect:
 
 	$ git commit -am 'add iphone_project and mobile group'
-	[master]: created 8962da8: "changed name"
-	 1 files changed, 4 insertions(+), 0 deletions(-)
-	$ git push
+	[master 8962da8] add iphone_project and mobile group
+	 1 file changed, 4 insertions(+)
+	$ git push origin master
 	Counting objects: 5, done.
-	Compressing objects: 100% (2/2), done.
-	Writing objects: 100% (3/3), 272 bytes, done.
-	Total 3 (delta 1), reused 0 (delta 0)
-	To git@gitserver:/opt/git/gitosis-admin.git
+	Compressing objects: 100% (3/3), done.
+	Writing objects: 100% (3/3), 272 bytes | 0 bytes/s, done.
+	Total 3 (delta 0), reused 0 (delta 0)
+	To git@gitserver:gitosis-admin.git
 	   fb27aec..8962da8  master -> master
 
 You can make your first push to the new `iphone_project` project by adding your server as a remote to your local version of the project and pushing. You no longer have to manually create a bare repository for new projects on the server — Gitosis creates them automatically when it sees the first push:
@@ -456,7 +468,7 @@ You can make your first push to the new `iphone_project` project by adding your 
 	$ git push origin master
 	Initialized empty Git repository in /opt/git/iphone_project.git/
 	Counting objects: 3, done.
-	Writing objects: 100% (3/3), 230 bytes, done.
+	Writing objects: 100% (3/3), 230 bytes | 0 bytes/s, done.
 	Total 3 (delta 0), reused 0 (delta 0)
 	To git@gitserver:iphone_project.git
 	 * [new branch]      master -> master
@@ -472,20 +484,20 @@ You want to work on this project with your friends, so you’ll have to re-add t
 Now you can add them all to your 'mobile' team so they have read and write access to `iphone_project`:
 
 	[group mobile]
-	writable = iphone_project
 	members = scott john josie jessica
+	writable = iphone_project
 
 After you commit and push that change, all four users will be able to read from and write to that project.
 
 Gitosis has simple access controls as well. If you want John to have only read access to this project, you can do this instead:
 
 	[group mobile]
-	writable = iphone_project
 	members = scott josie jessica
+	writable = iphone_project
 
 	[group mobile_ro]
-	readonly = iphone_project
 	members = john
+	readonly = iphone_project
 
 Now John can clone the project and get updates, but Gitosis won’t allow him to push back up to the project. You can create as many of these groups as you want, each containing different users and projects. You can also specify another group as one of the members (using `@` as prefix), to inherit all of its members automatically:
 
@@ -493,12 +505,12 @@ Now John can clone the project and get updates, but Gitosis won’t allow him to
 	members = scott josie jessica
 
 	[group mobile]
-	writable  = iphone_project
 	members   = @mobile_committers
+	writable  = iphone_project
 
 	[group mobile_2]
-	writable  = another_iphone_project
 	members   = @mobile_committers john
+	writable  = another_iphone_project
 
 If you have any issues, it may be useful to add `loglevel=DEBUG` under the `[gitosis]` section. If you’ve lost push access by pushing a messed-up configuration, you can manually fix the file on the server under `/home/git/.gitosis.conf` — the file from which Gitosis reads its info. A push to the project takes the `gitosis.conf` file you just pushed up and sticks it there. If you edit that file manually, it remains like that until the next successful push to the `gitosis-admin` project.
 
@@ -589,7 +601,7 @@ That rule will just get added to the ruleset for the `gitolite` repository.
 
 At this point you might be wondering how the access control rules are actually applied, so let’s go over that briefly.
 
-There are two levels of access control in Gitolite.  The first is at the repository level; if you have read (or write) access to *any* ref in the repository, then you have read (or write) access to the repository.  This is the only access control that Gitosis had.
+There are two levels of access control in Gitolite.  The first is at the repository level; if you have read (or write) access to *any* ref in the repository, then you have read (or write) access to the repository.
 
 The second level, applicable only to "write" access, is by branch or tag within a repository.  The username, the access being attempted (`W` or `+`), and the refname being updated are known.  The access rules are checked in order of appearance in the config file, looking for a match for this combination (but remember that the refname is regex-matched, not merely string-matched).  If a match is found, the push succeeds.  A fallthrough results in access being denied.
 
@@ -614,7 +626,7 @@ In addition to restricting what branches a user can push changes to, you can als
 
         -   VREF/NAME/Makefile  =   @junior_devs
 
-User who are migrating from the older Gitolite should note that there is a significant change in behaviour with regard to this feature; please see the migration guide for details.
+Users who are migrating from the older Gitolite should note that there is a significant change in behaviour with regard to this feature; please see the migration guide for details.
 
 ### Personal Branches ###
 
@@ -730,13 +742,13 @@ GitHub is by far the largest open source Git hosting site and it’s also one of
 
 ### GitHub ###
 
-GitHub is slightly different than most code-hosting sites in the way that it namespaces projects. Instead of being primarily based on the project, GitHub is user centric. That means when I host my `grit` project on GitHub, you won’t find it at `github.com/grit` but instead at `github.com/schacon/grit`. There is no canonical version of any project, which allows a project to move from one user to another seamlessly if the first author abandons the project.
+GitHub is slightly different than most code-hosting sites in the way that it namespaces projects. Instead of being primarily based on the project, GitHub is user-centric. That means when I host my `grit` project on GitHub, you won’t find it at `github.com/grit` but instead at `github.com/schacon/grit`. There is no canonical version of any project, which allows a project to move from one user to another seamlessly if the first author abandons the project.
 
 GitHub is also a commercial company that charges for accounts that maintain private repositories, but anyone can quickly get a free account to host as many open source projects as they want. We’ll quickly go over how that is done.
 
 ### Setting Up a User Account ###
 
-The first thing you need to do is set up a free user account. If you visit the Pricing and Signup page at `http://github.com/plans` and click the "Sign Up" button on the Free account (see Figure 4-2), you’re taken to the signup page.
+The first thing you need to do is set up a free user account. If you visit the "Plans and pricing" page at `https://github.com/pricing` and click the "Sign Up" button on the Free account (see Figure 4-2), you’re taken to the signup page.
 
 Insert 18333fig0402.png
 Figure 4-2. The GitHub plan page.

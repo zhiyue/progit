@@ -445,7 +445,7 @@ Créez un fichier appelé `users.txt` contenant cette équivalence dans le forma
 
 Pour récupérer la liste des noms d'auteurs utilisés par SVN, vous pouvez utiliser la ligne suivante :
 
-	$ svn log --xml | grep -P "^<author" | sort -u | \
+	$ svn log ^/ --xml | grep -P "^<author" | sort -u | \
 	      perl -pe 's/<author>(.*?)<\/author>/$1 = /' > users.txt
 
 Cela génère une sortie au format XML — vous pouvez visualiser les auteurs, créer une liste unique puis éliminer l'XML.
@@ -456,7 +456,7 @@ Vous pouvez alors fournir ce fichier à `git svn` pour l'aider à convertir les 
 Vous pouvez aussi indiquer à `git svn` de ne pas inclure les méta-données que Subversion importe habituellement en passant l'option `--no-metadata` à la commande `clone` ou `init`.
 Au final, votre commande d'import ressemble à ceci :
 
-	$ git-svn clone http://mon-projet.googlecode.com/svn/ \
+	$ git svn clone http://mon-projet.googlecode.com/svn/ \
 	      --authors-file=users.txt --no-metadata -s my_project
 
 Maintenant, l'import depuis Subversion dans le répertoire `my_project` est plus présentable.

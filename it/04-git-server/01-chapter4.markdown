@@ -70,7 +70,7 @@ L'aspetto negativo di SSH è che non puoi dare accesso anonimo al tuo repository
 
 ### Il Protocollo Git ###
 
-Poi c'è il protocollo Git. Questo è un demone speciale che è incluso nel pacchetto Git; è in ascolto su una porta dedicata (9418) e fornisce un servizio simile al protocollo SSH, ma assolutamente senza autenticazione. Per permettere ad un repository di essere servito tramite il protocollo Git, devi creare un file `git-export-daemon-ok` — il demone non serve il repository senza l'inserimento di questo file — altrimenti non ci sarebbe sicurezza. O il repository Git è disponibile per chiunque voglia copiarlo o altrimenti niente. Questo significa che generalmente non si invia tramite questo protocollo. Puoi abilitare l'accesso all'invio; ma data la mancanza di autenticazione, se abiliti l'accesso di scrittura, chiunque trovi su internet l'URL al progetto può inviare dati. Basti dire che questo è raro.
+Poi c'è il protocollo Git. Questo è un demone speciale che è incluso nel pacchetto Git; è in ascolto su una porta dedicata (9418) e fornisce un servizio simile al protocollo SSH, ma assolutamente senza autenticazione. Per permettere ad un repository di essere servito tramite il protocollo Git, devi creare un file `git-daemon-export-ok` — il demone non serve il repository senza l'inserimento di questo file — altrimenti non ci sarebbe sicurezza. O il repository Git è disponibile per chiunque voglia copiarlo o altrimenti niente. Questo significa che generalmente non si invia tramite questo protocollo. Puoi abilitare l'accesso all'invio; ma data la mancanza di autenticazione, se abiliti l'accesso di scrittura, chiunque trovi su internet l'URL al progetto può inviare dati. Basti dire che questo è raro.
 
 #### I Pro ####
 
@@ -111,15 +111,16 @@ Un'altra cosa carina è che l'HTTP è un protocollo comunissimo che i firewall d
 
 L'altra faccia della medaglia nel fornire il tuo repository via HTTP è che è relativamente inefficiente per il client. In genere porta via molto tempo per clonare o scaricare dal repository, e si ha spesso un sovraccarico della rete tramite il trasferimento di volumi via HTTP rispetto ad altri protocolli di rete. Non essendo abbastanza intelligente da trasferire solo i dati di cui hai bisogno — non c'è un lavoro dinamico dalla parte del server in questa transazione — il protocollo HTTP viene spesso definito un protocollo _stupido_. Per maggiori informazioni sulle differenze nell'efficienza tra il protocollo HTTP e gli altri, vedi il Capitolo 9.
 
-## Ottenere Git su di un Server ##
+## Mettere Git su di un server ##
 
 Per inizializzare un qualsiasi server Git, devi esportare un repository esistente in un nuovo repository di soli dati — cioè un repository che non contiene la directory di lavoro. Questo è generalmente molto semplice da fare.
 Per clonare il tuo repository per creare un nuovo repository di soli dati, devi avviare il comando clone con l'opzione `--bare`. Convenzionalmente, un repository di soli dati in finisce in `.git`, ad esempio:
 
 	$ git clone --bare my_project my_project.git
-	Initialized empty Git repository in /opt/projects/my_project.git/
+	Cloning into bare repository 'my_project.git'...
+  	done.
 
-L'output di questo comando confonde un pochino. Dato che `clone` è un `git init` quindi un `git fetch`, vediamo parte dell'output dalla parte `git init`, il quale crea una directory vuota. L'effecttivo trasferimento dell'oggetto non fornisce output, ma avviene. Ora dovresti avere una copia della directory dei dati di Git nella directory `my_project.git`.
+Ora dovresti avere una copia della directory dei dati di Git nella directory `my_project.git`.
 
 La stessa cosa la si può ottenere con
 
@@ -226,14 +227,18 @@ Devi solo aggiungerle al tuo file `authorized_keys`:
 	$ cat /tmp/id_rsa.josie.pub >> ~/.ssh/authorized_keys
 	$ cat /tmp/id_rsa.jessica.pub >> ~/.ssh/authorized_keys
 
-Ora, puoi impostare un repository vuoto avviando `git init` con l'opzione `--bare`, che inizializza il repository senza la directory di lavoro:
+L'autenticazione tramite chiavi SSH generalmente richiede una restrizione dei diritti di accesso ai file coinvolti. Per prevenire qualsiasi problema è necessario eseguire:
+ 
+ 	$ chmod -R go= ~/.ssh
+ 
+Ora, puoi configurargli un repository vuoto eseguendo `git init` con l'opzione `--bare`, che inizializza il repository senza la directory di lavoro:
 
 	$ cd /opt/git
 	$ mkdir project.git
 	$ cd project.git
 	$ git --bare init
 
-Poi, John, Josie o Jessica possono inviare la prima versione del loro progetto nel repository aggiungendolo come ramo remoto ed inviandolo su di un ramo. Nota che qualcuno deve accedere via shell alla macchina e creare un repository base ogni volta che si vuole aggiungere un progetto. Usiamo il nome `gitserver` per il server dove hai impostato il tuo utente 'git' ed il repository. Se lo stai usando nella rete interna e hai impostato un DNS con il punto `gitserver` per puntare a questo server, allora puoi usare il comando:
+E John, Josie o Jessica possono inviare la prima versione del loro progetto nel repository aggiungendolo come ramo remoto ed inviandolo su di un ramo. Fai attenzione che ogni volta che vuoi aggiungere un progetto, qualcuno deve accedere via shell alla macchina e creare un repository base. Usiamo il nome `gitserver` per il server dove hai impostato il tuo utente 'git' ed il repository. Se lo stai usando nella rete interna e hai impostato un DNS con il punto `gitserver` per puntare a questo server, allora puoi usare il comando:
 
 	# sul computer di Johns
 	$ cd myproject
@@ -368,7 +373,7 @@ Gitosis richiede alcuni strumenti Python, così prima devi installare il pacchet
 
 Poi, puoi clonare ed installare Gitosis dal progetto principale:
 
-	$ git clone git://eagain.net/gitosis.git
+	$ git clone https://github.com/tv42/gitosis.git
 	$ cd gitosis
 	$ sudo python setup.py install
 
@@ -716,7 +721,7 @@ Puoi controllare quali progetti GitWeb lascia sfogliare agli utenti via browser 
 
 Ora, se fai il commit ed il push del progetto, GitWeb automaticamente inizierà a mostrare il progetto iphone.
 
-## Hosted Git ##
+## Hosting Git ##
 
 Se non vuoi svolgere tutto il lavoro di configurazione di un tuo server Git, hai varie opzioni per ospitare i tuoi progetti Git su un sito esterno e dedicato. Fare questo offre un numero di vantaggi: un sito di hosting è generalmente veloce da configurare ed è facile avviare un progetto su questo, e non sono necessari spese di mantenimento o controllo del server. Se imposti e avvi il tuo server interno, puoi comunque voler utilizzare un hosting pubblico per i progetti a codice aperto — è generalmente più facile per una comunità open source trovarti ed aiutarti.
 
@@ -734,19 +739,19 @@ GitHub è leggermente differente nello spazio dei nomi che usa per i progetti ri
 
 GitHub è inoltre una organizzazione commerciale che addebita gli account che mantengono repository privati, ma chiunque può avere un account libero per ospitare qualsiasi progetto open source come preferisce. Vedremo velocemente come ottenere ciò.
 
-### Configurare un Account Utente ###
+### Configurare un account ###
 
-La prima cosa di cui hai bisogno è configurare un account utente gratuito. Se visiti la pagina "Pricing and Signup" all'inidirizzo `http://github.com/plans` e fai click sul pulsante "Sign Up" per un account gratuito (vedi figura 4-2), sarai portato alla pagina di iscrizione.
+La prima cosa di cui hai bisogno di un account gratuito. Vai alla pagina "Plans and pricing", che trovi all'inidirizzo `http://https://github.com/pricing`, e clicca sul pulsante "Sign Up" per creare un account gratuito (vedi figura 4-2), sarai portato alla pagina di iscrizione.
 
 Insert 18333fig0402.png
 Figura 4-2. La pagina dei piani di GitHub.
 
-Qui devi scegliere un nome utente che non è già stato scelto nel sistema ed inserire un indirizzo e-mail che verrà associato all'account e una password (vedi Figura 4-3).
+Qui devi scegliere un nome utente che non sia già stato scelto da qualcun altro, indicare un indirizzo e-mail che verrà associato all'account e una password (vedi Figura 4-3).
 
 Insert 18333fig0403.png 
 Figura 4-3. Il form di iscrizione di GitHub.
 
-Se ne hai una, è buona cosa aggiungere la propria chiave pubblica SSH. Abbiamo già visto come generare una nuova chiave, nella sezione "Piccole Configurazioni". Prendi il contenuto della chiave pubblica della tua coppia di chiavi, ed incollala nel box SSH Public Key. Facendo click sul link "explain ssh keys" otterrai le istruzioni dettagliate su come fare questa cosa sui maggiori sistemi operativi.
+Se già ne hai una, è buona cosa aggiungere la propria chiave pubblica SSH. Abbiamo già visto come generare una nuova chiave, nella sezione "Piccole Configurazioni". Prendi il contenuto della chiave pubblica della tua coppia di chiavi, ed incollala nel box SSH Public Key. Facendo click sul link "explain ssh keys" otterrai le istruzioni dettagliate su come fare questa cosa sui maggiori sistemi operativi.
 Cliccare il pulsante "I agree, sign me up" ti porta al tuo nuovo pannello utente (vedi Figura 4-4).
 
 Insert 18333fig0404.png 

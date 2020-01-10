@@ -12,11 +12,11 @@ Git 서버를 운영하는 것은 어렵지 않다. 우선 사용할 전송 프�
 
 Git은 Local, SSH, Git, HTTP 이렇게 네 가지의 네트워크 프로토콜을 사용할 수 있다. 이 절에서는 각각 어떤 경우에 유용한지 살펴볼 것이다.
 
-HTTP 프로토콜를 제외한 나머지들은 모두 Git이 서버에 설치돼 있어야 한다.
+HTTP 프로토콜을 제외한 나머지들은 모두 Git이 서버에 설치돼 있어야 한다.
 
 ### 로컬 프로토콜 ###
 
-가장 기본적인 것이 _로컬 프로토콜_ 이다. 리모트 저장소가 단순히 디스크의 다른 디렉토리에 있을 때 사용한다. 팀원들이 전부 한 시스템에 로그인하여 개발하거나 아니면 NFS같은 것으로 파일시스템을 공유하고 있을 때 사용한다. 전자는 문제가 될 수 있다. 모든 저장소가 한 시스템에 있기 때문에 한순간에 찌질해질 수 있다.
+가장 기본적인 것이 _로컬 프로토콜_ 이다. 리모트 저장소가 단순히 디스크의 다른 디렉토리에 있을 때 사용한다. 팀원들이 전부 한 시스템에 로그인하여 개발하거나 아니면 NFS같은 것으로 파일시스템을 공유하고 있을 때 사용한다. 전자는 문제가 될 수 있다. 모든 저장소가 한 시스템에 있기 때문에 한순간에 모두 잃을 수 있다.
 
 공유 파일시스템을 마운트했을 때는 로컬 저장소를 사용하는 것처럼 Clone하고 Push하고 Pull하면 된다. 일단 저장소를 Clone하거나 프로젝트에 리모트 저장소로 추가한다. 추가할 때 URL 자리에 저장소의 경로를 사용한다. 예를 들어 아래와 같이 로컬 저장소를 Clone한다:
 
@@ -26,7 +26,7 @@ HTTP 프로토콜를 제외한 나머지들은 모두 Git이 서버에 설치돼
 
 	$ git clone file:///opt/git/project.git
 
-Git은 파일 경로를 직접 쓸 때와 `file://`로 시작하는 URL을 사용할 때에 약간 다르게 처리한다. 디렉토리 경로를 그대로 사용하면 Git은 필요한 파일을 직접 복사하거나 하드 링크를 사용한다. 하지만 `file://`로 시작하면 Git은 네트워크를 통해서 데이터를 전송할 때처럼 프로세스를 별도로 생성하여 처리한다. 이 프로세스로 데이터를 전송하는 것은 효율이 좀 떨어지지만 그래도 `file://`를 사용하는 이유가 있다. 보통은 다른 버전 관리 시스템들에서 임포트한 후에 이렇게 사용하는데, 외부 레퍼런스나 개체들이 포함된 저장소의 복사본을 깨끗한 상태로 남겨두고자 할때 사용한다(*9장*에서 자세히 다룬다). 여기서는 속도가 빠른 디렉토리 경로를 사용한다.
+Git은 파일 경로를 직접 쓸 때와 `file://`로 시작하는 URL을 사용할 때에 약간 다르게 처리한다. 디렉토리 경로를 사용해서 같은 파일시스템에 있는 저장소를 Clone할 때 Git은 하드링크를 만든다. 같은 파일시스템에 있는게 아니면 그냥 복사한다. 하지만 `file://`로 시작하면 Git은 네트워크를 통해서 데이터를 전송할 때처럼 프로세스를 별도로 생성하여 처리한다. 이 프로세스로 데이터를 전송하는 것은 효율이 좀 떨어지지만 그래도 `file://`를 사용하는 이유가 있다. 보통은 다른 버전 관리 시스템들에서 임포트한 후에 이렇게 사용하는데, 외부 레퍼런스나 개체들이 포함된 저장소의 복사본을 깨끗한 상태로 남겨두고자 할때 사용한다(*9장*에서 자세히 다룬다). 여기서는 속도가 빠른 디렉토리 경로를 사용한다.
 
 이미 있는 Git 프로젝트에서 아래와 같이 로컬 저장소를 추가한다:
 
@@ -62,7 +62,7 @@ SSH를 통해 Git 저장소를 Clone하려면 `ssh://`로 시작하는 URL을 �
 
 #### 장점 ####
 
-SSH는 장점이 매우 많은 프로토콜이다. 첫째, 누가 리모트에서 저장소에 접근하는지 알고 싶다면 SSH를 사용해야 한다. 둘째, SSH는 상대적으로 설정하기 쉽다. SSH 데몬은 정말 흔하다. 네트워크 관리자은 SSH 데몬을 다루어본 경험이 있고 대부분의 OS 배포판에는 SSH 데몬과 관리도구가 모두 들어 있다. 셋째, SSH를 통해 접근하면 보안에 안전하다. 모든 데이터는 암호화되어 인증된 상태로 전송된다. 마지막으로 SSH는 전송 시 데이터를 가능한 압축하기 때문에 효율적이다.
+SSH는 장점이 매우 많은 프로토콜이다. 첫째, 누가 리모트에서 저장소에 접근하는지 알고 싶다면 SSH를 사용해야 한다. 둘째, SSH는 상대적으로 설정하기 쉽다. SSH 데몬은 정말 흔하다. 거의 모든 네트워크 관리자는 SSH 데몬을 다루어본 경험을 가지고 있을것이고, 대부분의 OS 배포판에는 SSH 데몬과 관리도구가 들어 있다. 셋째, SSH를 통해 접근하면 보안에 안전하다. 모든 데이터는 암호화되어 인증된 상태로 전송된다. 마지막으로 SSH는 전송 시 데이터를 가능한 압축하기 때문에 효율적이다.
 
 #### 단점 ####
 
@@ -70,7 +70,7 @@ SSH의 단점은 익명으로 접근할 수 없다는 것이다. 심지어 읽�
 
 ### Git 프로토콜 ###
 
-Git 프로토콜은 Git에 포함된 데몬을 사용하는 방법이다. 포트는 9418이며 SSH 프로토콜과 비슷한 서비스를 제공하지만, 인증 메커니즘이 없다. 저장소에 git-export-daemon-ok 파일을 만들면 Git 프로토콜로 서비스할 수 있지만, 보안은 없다. 이 파일이 없는 저장소는 Git 프로토콜로 서비스할 수 없다. 이 저장소는 누구나 Clone할 수 있거나 아무도 Clone할 수 없거나 둘 중의 하나만 선택할 수 있다. 그래서 이 프로토콜로는 Push 가능하게 설정할 수 없다. 엄밀히 말해서 Push할 수 있도록 설정할 수 있지만, 인증하도록 할 수 없다. 그러니까 당신이 Push할 수 있으면 이 프로젝트의 URL을 아는 사람은 누구나 Push할 수 있다. 그냥 이런 것도 있지만 잘 안 쓴다고 알고 있으면 된다.
+Git 프로토콜은 Git에 포함된 데몬을 사용하는 방법이다. 포트는 9418이며 SSH 프로토콜과 비슷한 서비스를 제공하지만, 인증 메커니즘이 없다. 저장소에 git-export-daemon-ok 파일을 만들면 Git 프로토콜로 서비스할 수 있지만, 보안은 없다. 이 파일이 없는 저장소는 Git 프로토콜로 서비스할 수 없다. 이 저장소는 누구나 Clone할 수 있거나 아무도 Clone할 수 없거나 둘 중의 하나만 선택할 수 있다. 그래서 이 프로토콜로는 Push를 가능하게 설정할 수 없다. 엄밀히 말해서 Push할 수 있도록 설정할 수 있지만, 인증하도록 할 수 없다. 그러니까 당신이 Push할 수 있으면 이 프로젝트의 URL을 아는 사람은 누구나 Push할 수 있다. 그냥 이런 것도 있지만 잘 안 쓴다고 알고 있으면 된다.
 
 #### 장점 ####
 
@@ -96,7 +96,7 @@ post-update 훅은 Git에 포함되어 있으며 `git update-server-info`라는 
 
 여기서는 Apache 서버가 기본으로 사용하는 `/var/www/htdocs`을 루트 디렉토리로 사용하지만 다른 웹 서버를 사용해도 된다. 단순히 Bare 저장소를 HTTP 문서 루트에 넣으면 된다. Git 데이터는 일반적인 정적 파일처럼 취급된다(*9장*에서 정확히 어떻게 처리하는지 다룰 것이다).
 
-HTTP를 통해서 Push하는 것도 가능하다. 단지 이 방법은 잘 사용하지 않는 WebDAV 환경을 완벽하게 구축해야 한다. 잘 사용하지 않기 때문에 이 책에서도 다루지 않는다. HTTP 프로토콜로 Push하고 싶으면 `http://www.kernel.org/pub/software/scm/git/docs/howto/setup-git-server-over-http.txt` 읽고 저장소를 만들면 된다. HTTP를 통해서 Push하는 방법의 좋은 점은 WebDAV 서버를 아무거나 골라 쓸 수 있다는 것이다. 그래서 WebDAV를 지원하는 웹 호스팅 업체를 이용하면 이 기능을 사용할 수 있다.
+HTTP를 통해서 Push하는 것도 가능하다. 단지 이 방법은 잘 사용하지 않는 WebDAV 환경을 완벽하게 구축해야 한다. 잘 사용하지 않기 때문에 이 책에서도 다루지 않는다. HTTP 프로토콜로 Push하고 싶으면 `http://www.kernel.org/pub/software/scm/git/docs/howto/setup-git-server-over-http.txt` 을 읽고 저장소를 만들면 된다. HTTP를 통해서 Push하는 방법의 좋은 점은 WebDAV 서버를 아무거나 골라 쓸 수 있다는 것이다. 그래서 WebDAV를 지원하는 웹 호스팅 업체를 이용하면 이 기능을 사용할 수 있다.
 
 #### 장점 ####
 
@@ -115,7 +115,13 @@ HTTP는 매우 보편적인 프로토콜이라서 거의 모든 회사가 트래
 어떤 서버를 설치하더라도 일단 저장소를 Bare 저장소로 만들어야 한다. 다시 말하지만, Bare 저장소는 워킹 디렉토리가 없는 저장소이다. `--bare` 옵션을 주고 Clone하면 새로운 Bare 저장소가 만들어진다. Bare 저장소 디렉토리는 관례에 따라. git 확장자로 끝난다:
 
 	$ git clone --bare my_project my_project.git
-	Initialized empty Git repository in /opt/projects/my_project.git/
+	Cloning into bare repository 'my_project.git'...
+	done.
+
+<!-- This next part doesn't fit the actual output as shown, the confusing part
+     of the output is no longer shown in the command output. I would like to asks
+     the original author to modify the text.
+-->
 
 이 명령이 출력하는 메시지가 조금 이상해보일 수도 있다.  사실 `git clone` 명령은 `git init`을 하고 나서 `git fetch`를 실행한다. 그런데 빈 디렉토리밖에 만들지 않는 `git init` 명령의 메시지만 보여준다. 개체 전송에 관련된 메시지는 아무것도 보여주지 않는다. 전송 메시지를 보여주지 않지만 `my_project.git` 디렉토리를 보면 Git 데이터가 들어 있다.
 
@@ -282,6 +288,13 @@ something, something.pub이라는 형식으로 된 파일을 볼 수 있다. som
 
 	$ cat .git/hooks/post-update
 	#!/bin/sh
+	#
+	# An example hook script to prepare a packed repository for use over
+	# dumb transports.
+	#
+	# To enable this hook, rename this file to "post-update".
+	#
+	
 	exec git-update-server-info
 
 SSH를 통해서 서버에 Push하면 Git은 이 명령어를 실행하여 HTTP를 통해서도 Fetch할 수 있도록 파일를 갱신한다.
@@ -312,7 +325,7 @@ Apache를 재시작하면 아래와 같은 URL로 저장소를 Clone할 수 있�
 프로젝트 저장소를 단순히 읽거나 쓰는 것에 대한 설정은 다뤘다. 이제는 웹 기반 인터페이스를 설정해보자. Git에는 GitWeb이라는 CGI 스크립트를 제공해서 쉽게 웹에서 저장소를 조회하도록 할 수 있다. `http://git.kernel.org`같은 사이트에서 GitWeb을 구경할 수 있다(그림 4-1).
 
 Insert 18333fig0401.png
-그림 4-1 Git 웹용 UI, GitWeb
+그림 4-1. Git 웹용 UI, GitWeb
 
 Git은 GitWeb을 쉽게 사용해 볼 수 있도록 서버를 잠시 띄우는 명령을 제공한다. 시스템에 `lighttpd`나 `webrick` 같은 경량 웹서버가 설치돼 있어야 이 명령을 사용할 수 있다. 리눅스에서는 `lighttpd`가 설치돼 있을 확률이 높고 프로젝트 디렉토리에서 그냥 `git instaweb`을 실행하면 바로 실행된다. Mac의 Leopard 버전은 Ruby가 미리 설치돼 있기 때문에 `webrick`이 더 낫다. lighttpd이 아니라면 아래와 같이 `--httpd` 옵션을 사용해야 한다:
 
@@ -363,7 +376,7 @@ Gitosis는 Python이 필요하기 때문에 먼저 Python setuptools 패키지�
 
 그리고 Gitosis 프로젝트 사이트에서 Gitosis를 Clone한 후 설치한다:
 
-	$ git clone git://eagain.net/gitosis.git
+	$ git clone https://github.com/tv42/gitosis.git
 	$ cd gitosis
 	$ sudo python setup.py install
 
@@ -397,6 +410,7 @@ Gitosis가 키들을 관리할 것이기 때문에 현재 파일은 삭제하고
 
 	$ ssh git@gitserver
 	PTY allocation request failed on channel 0
+	ERROR:gitosis.serve.main:Need SSH_ORIGINAL_COMMAND in environment.
 	fatal: unrecognized command 'gitosis-serve schacon@quaternion'
 	  Connection to gitserver closed.
 
@@ -421,8 +435,8 @@ Gitosis가 키들을 관리할 것이기 때문에 현재 파일은 삭제하고
 	[gitosis]
 
 	[group gitosis-admin]
-	writable = gitosis-admin
 	members = scott
+	writable = gitosis-admin
 
 scott이라는 사용자는 Gitosis를 초기화할 때 사용한 공개키의 사용자이다. 이 사용자만 `gitosis-admin` 프로젝트에 접근할 수 있다.
 
@@ -435,14 +449,14 @@ scott이라는 사용자는 Gitosis를 초기화할 때 사용한 공개키의 �
 `gitosis-admin` 프로젝트를 수정하면 커밋하고 서버에 Push해야 수정한 설정이 적용된다:
 
 	$ git commit -am 'add iphone_project and mobile group'
-	[master]: created 8962da8: "changed name"
-	 1 files changed, 4 insertions(+), 0 deletions(-)
-	$ git push
+	[master 8962da8] add iphone_project and mobile group
+	 1 file changed, 4 insertions(+)
+	$ git push origin master
 	Counting objects: 5, done.
-	Compressing objects: 100% (2/2), done.
-	Writing objects: 100% (3/3), 272 bytes, done.
-	Total 3 (delta 1), reused 0 (delta 0)
-	To git@gitserver:/opt/git/gitosis-admin.git
+	Compressing objects: 100% (3/3), done.
+	Writing objects: 100% (3/3), 272 bytes | 0 bytes/s, done.
+	Total 3 (delta 0), reused 0 (delta 0)
+	To git@gitserver:gitosis-admin.git
 	   fb27aec..8962da8  master -> master
 
 로컬에 있는 `iphone_project` 프로젝트에 이 서버를 리모트 저장소로 추가하고 Push하면 서버에 새로운 저장소가 추가된다. 서버에 프로젝트를 새로 만들 때 이제는 수동으로 Bare 저장소를 만들 필요가 없다. 처음 Push할 때 Gitosis가 알아서 생성해 준다:
@@ -451,7 +465,7 @@ scott이라는 사용자는 Gitosis를 초기화할 때 사용한 공개키의 �
 	$ git push origin master
 	Initialized empty Git repository in /opt/git/iphone_project.git/
 	Counting objects: 3, done.
-	Writing objects: 100% (3/3), 230 bytes, done.
+> Writing objects: 100% (3/3), 230 bytes | 0 bytes/s, done.
 	Total 3 (delta 0), reused 0 (delta 0)
 	To git@gitserver:iphone_project.git
 	 * [new branch]      master -> master
@@ -467,33 +481,33 @@ Gitosis를 이용할 때에는 저장소 경로를 명시할 필요도 없고 �
 이 세 사람을 모두 mobile 팀으로 추가하여 `iphone_project` 에 대한 읽기, 쓰기를 허용한다:
 
 	[group mobile]
-	writable = iphone_project
 	members = scott john josie jessica
+	writable = iphone_project
 
 이 파일을 커밋하고 Push하고 나면 네 명 모두 `iphone_project`를 읽고 쓸 수 있게 된다.
 
 Gitosis의 접근제어 방법은 매우 단순하다. 만약 이 프로젝트에 대해서 John은 읽기만 가능하도록 설정하려면 아래와 같이 한다:
 
 	[group mobile]
-	writable = iphone_project
 	members = scott josie jessica
+	writable = iphone_project
 
 	[group mobile_ro]
-	readonly = iphone_project
 	members = john
+	readonly = iphone_project
 
-이제 John은 프로젝트를 Clone하거나 Fetch할 수는 있지만, 프로젝트에 Push할 수는 없다. 다양한 사용자와 프로젝트가 있어도 필요한 만큼 그룹을 만들어 사용하면 된다. 그리고 members 항목에 사용자 대신 그룹명을 사용할 수도 있다. 그룹명 앞에 `@`를 붙이면 그 그룹의 사용자을 그대로 상속한다:
+이제 John은 프로젝트를 Clone하거나 Fetch할 수는 있지만, 프로젝트에 Push할 수는 없다. 다양한 사용자와 프로젝트가 있어도 필요한 만큼 그룹을 만들어 사용하면 된다. 그리고 members 항목에 사용자 대신 그룹명을 사용할 수도 있다. 그룹명 앞에 `@`를 붙이면 그 그룹의 사용자를 그대로 상속한다:
 
 	[group mobile_committers]
 	members = scott josie jessica
 
 	[group mobile]
-	writable  = iphone_project
 	members   = @mobile_committers
+	writable  = iphone_project
 
 	[group mobile_2]
-	writable  = another_iphone_project
 	members   = @mobile_committers john
+	writable  = another_iphone_project
 
 `[gitosis]` 절에 `loglevel=DEBUG`라고 적으면 문제가 생겼을 때 해결하는데 도움이 된다. 그리고 설정이 꼬여버려서 Push할 수 없게 되면 서버에 있는 파일을 수동으로 고쳐도 된다. Gitosis는 `/home/git/.gitosis.conf` 파일의 정보를 읽기 때문에 이 파일을 고친다. `gitosis.conf`는 Push할 때 그 위치로 복사되기 때문에 수동으로 고친 파일은 `gitosis-admin` 프로젝트가 다음에 Push될 때까지 유지된다.
 
@@ -731,20 +745,20 @@ GitHub은 이윤을 목적으로 하는 회사이기 때문에 비공개 저장�
 
 ### 계정 설정하기 ###
 
-먼저 무료 계정을 하나 만든다. 가격 정책에 대해 알려주며 가입을 시작할 수 있는 `http://github.com/plans`에 방문하여 "Sign up" 버튼을 클릭한다. 그러면 가입 페이지로 이동한다.
+먼저 무료 계정을 하나 만든다. 가격 정책에 대해 알려주며 가입을 시작할 수 있는 `https://github.com/pricing`에 방문하여 "Sign up" 버튼을 클릭한다. 그러면 가입 페이지로 이동한다.
 
 Insert 18333fig0402.png
-그림 4-2 GitHub 가격 정책 페이지
+그림 4-2. GitHub 가격 정책 페이지
 
 아직 등록되지 않은 사용자 이름을 입력하고 e-mail 주소와 암호를 입력한다(그림 4-3).
 
 Insert 18333fig0403.png
-그림 4-3 GitHub 가입 폼
+그림 4-3. GitHub 가입 폼
 
 그리고 SSH 공개키가 있으면 바로 등록한다. SSH 키를 만드는 방법은 "바로 설정하기" 절에서 이미 설명했다. 그 공개키 파일의 내용을 복사해서 SSH 공개키 입력 박스에 붙여 넣는다. "explain ssh keys" 링크를 클릭하면 key를 생성하는 방법을 자세히 설명해준다. 주요 운영체제에서 하는 방법이 모두 설명돼 있다. "I agree, sign me up" 버튼을 클릭하면 자신만의 대쉬보드 페이지가 나타난다.
 
 Insert 18333fig0404.png
-그림 4-4 GitHub 사용자 대쉬보드
+그림 4-4. GitHub 사용자 대쉬보드
 
 그리고 저장소를 만들자.
 
@@ -753,17 +767,17 @@ Insert 18333fig0404.png
 `Your Repositories`옆에 있는 "create a new one" 링크를 클릭하면 저장소를 만드는 입력 폼을 볼 수 있다(그림 4-5).
 
 Insert 18333fig0405.png
-그림 4-5 GitHub의 저장소를 생성하는 폼
+그림 4-5. GitHub의 저장소를 생성하는 폼
 
 이 폼에 프로젝트 이름과 프로젝트 설명을 적는다. 다 적은 후에 "Create Repository" 버튼을 클릭하면 GitHub에 저장소가 생긴다.
 
 Insert 18333fig0406.png
-그림 4-6 GitHub 프로젝트 정보
+그림 4-6. GitHub 프로젝트 정보
 
 이 저장소에는 아직 코드가 없어서 GitHub은 프로젝트를 새로 만드는 방법, 이미 있는 Git 프로젝트를 Push하는 법, 공개된 Subversion 저장소에서 프로젝트를 가져오는(Import) 방법 등을 보여준다.
 
 Insert 18333fig0407.png
-그림 4-7 새 저장소를 위한 사용설명서
+그림 4-7. 새 저장소를 위한 사용설명서
 
 여기 설명하는 내용은 이미 우리가 배웠다. 프로젝트가 없을 때는 아래와 같이 프로젝트를 초기화한다:
 
@@ -779,7 +793,7 @@ Insert 18333fig0407.png
 이제 프로젝트가 GitHub에서 서비스되니 공유하고 싶은 사람에게 URL을 알려 주면 된다. URL은 `http://github.com/testinguser/iphone_project`이다. 그리고 이 저장소의 정보를 잘 살펴보면 Git URL이 두 개라는 것을 발견할 수 있다.
 
 Insert 18333fig0408.png
-그림 4-8 프로젝트의 공개 URL과 비공개 URL
+그림 4-8. 프로젝트의 공개 URL과 비공개 URL
 
 `Public Clone URL`은 말 그대로 누구나 프로젝트를 Clone할 수 있도록 모두에게 읽기 전용으로 공개하는 것이다. 이 URL을 다른 사람에 알려주거나 웹사이트 같은데 공개하는 것을 부담스러워 하지 않아도 된다.
 
@@ -790,7 +804,7 @@ Insert 18333fig0408.png
 GitHub은 공개 중인 Subversion 프로젝트를 Git 프로젝트로 만들어 준다. 사용설명서 하단에 있는 "Subversion에서 Import하기" 링크를 클릭하면 임포트 폼을 볼 수 있고 거기에 Subversion 프로젝트의 URL을 넣는다(그림 4-9).
 
 Insert 18333fig0409.png
-그림 4-9 Subversion 프로젝트를 Import하는 화면
+그림 4-9. Subversion 프로젝트를 Import하는 화면
 
 프로젝트가 비표준 방식을 사용하거나 규모가 너무 크고 비공개라면 이 기능을 사용할 수 없다. *7장*에서 수동으로 임포트하는 방법에 대해 좀 더 자세히 배운다.
 
@@ -801,17 +815,17 @@ Insert 18333fig0409.png
 프로젝트 페이지에 있는 Admin 버튼을 클릭해서 관리 페이지로 이동한다(그림 4-10).
 
 Insert 18333fig0410.png
-그림 4-10 GitHub의 프로젝트 관리 페이지
+그림 4-10. GitHub의 프로젝트 관리 페이지
 
 다른 사람에게 쓰기 권한을 주려면 “Add another collaborator” 링크를 클릭한다. 그러면 텍스트 박스가 새로 나타나는 데 거기에 사용자 이름을 입력한다. 사용자 이름을 입력하기 시작하면 자동으로 시스템에 존재하는 사용자를 찾아서 보여 준다. 원하는 사용자를 찾으면 Add 버튼을 클릭해서 그 사용자를 동료로 만든다.
 
 Insert 18333fig0411.png
-그림 4-11 프로젝트에 동료 추가하기
+그림 4-11. 프로젝트에 동료 추가하기
 
 추가한 사람은 동료 목록 박스에서 모두 확인할 수 있다(그림 4-12).
 
 Insert 18333fig0412.png 
-그림 4-12 프로젝트 동료들
+그림 4-12. 프로젝트 동료들
 
 그리고 만약 다시 혼자 작업하고 싶어지면 "revoke" 링크를 클릭하여 쫓아낸다. 쫓겨나면 더는 Push할 수 없다. 또 기존 프로젝트에 등록된 동료를 그룹으로 묶어 추가할 수도 있다.
 
@@ -820,7 +834,7 @@ Insert 18333fig0412.png
 Subversion에서 Import했거나 로컬의 프로젝트를 Push하고 나면 프로젝트 메인 페이지가 그림 4-13같이 바뀐다.
 
 Insert 18333fig0413.png
-그림 4-13 GitHub의 프로젝트 메인 페이지
+그림 4-13. GitHub의 프로젝트 메인 페이지
 
 사람들이 이 프로젝트에 방문하면 이 페이지가 제일 처음 보인다. 이 페이지는 몇 가지 탭으로 구성된다. Commits 탭은 지금까지의 커밋을 `git log` 명령을 실행시킨 것처럼 최신 것부터 보여준다. Network 탭은 프로젝트를 복제한 사람들과 기여한 사람들을 모두 보여준다. Downloads 탭에는 바이너리 파일이나 프로젝트의 태그 버전을 압축해서 올릴 수 있다. Wiki 탭은 프로젝트에 대한 정보나 문서를 쓰는 곳이다. Graphs 탭은 사람들의 활동을 그림과 통계로 보여준다. 메인 탭인 Source 탭은 프로젝트의 메인 디렉토리를 보여주고 README 파일이 있으면 자동으로 화면에 출력해 준다. 그리고 마지막 커밋 내용도 함께 보여준다.
 
@@ -833,12 +847,12 @@ Insert 18333fig0413.png
 프로젝트 페이지에 들어가서 상단의 "fork" 버튼을 클릭하여 프로젝트를 복제한다(그림 4-14) 그림 4-14의 예는 mojombo/chronic 프로젝트 페이지이다
 
 Insert 18333fig0414.png
-그림 4-14 어떤 저장소든지 "fork" 버튼을 클릭하면 Push할 수 있는 저장소를 얻을 수 있다
+그림 4-14. 어떤 저장소든지 "fork" 버튼을 클릭하면 Push할 수 있는 저장소를 얻을 수 있다
 
 클릭하는 순간, 이 프로젝트를 즉시 Fork한다(그림 4-15).
 
 Insert 18333fig0415.png
-그림 4-15 Fork한 프로젝트
+그림 4-15. Fork한 프로젝트
 
 ### GitHub 요약 ###
 

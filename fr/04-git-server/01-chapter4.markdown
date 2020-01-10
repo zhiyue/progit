@@ -43,7 +43,8 @@ Ou bien cela :
 	$ git clone file:///opt/git/projet.git
 
 Git opère légèrement différemment si vous spécifiez explicitement le protocole `file://` au début de l'URL.
-Si vous spécifiez simplement le chemin, Git tente d'utiliser des liens durs ou une copie des fichiers nécessaires.
+Si vous spécifiez simplement le chemin et si la destination se trouve sur le même système de fichiers, Git tente d'utiliser des liens physiques pour le fichiers communs.
+Si la destination se trouve sur un autre système de fichiers, Git fait une copie des fichiers nécessaires.
 Si vous spécifiez le protocole `file://`, Git lance un processus d'accès au travers du réseau, ce qui est généralement moins efficace.
 La raison d'utiliser spécifiquement le préfixe `file://` est la volonté d'obtenir une copie propre du dépôt, sans aucune référence ou aucun objet supplémentaire qui pourraient résulter d'un import depuis un autre système de gestion de version ou d'une action similaire (voir chapitre 9 pour les tâches de maintenance).
 Nous utiliserons les chemins normaux par la suite car c'est la méthode la plus efficace.
@@ -109,7 +110,7 @@ Si vous souhaitez proposer de l'accès anonyme en lecture seule à vos projets, 
 ### Protocole Git ###
 
 Vient ensuite le protocole Git. Celui-ci est géré par un *daemon* spécial livré avec Git. Ce *daemon* (démon, processus en arrière plan) écoute sur un port dédié (9418) et propose un service similaire au protocole SSH, mais sans aucune sécurisation.
-Pour qu'un dépôt soit publié via le protocole Git, le fichier `git-export-daemon-ok` doit exister mais mise à part cette condition sans laquelle le *daemon* refuse de publier un projet, il n'y a aucune sécurité.
+Pour qu'un dépôt soit publié via le protocole Git, le fichier `git-daemon-export-ok` doit exister mais mise à part cette condition sans laquelle le *daemon* refuse de publier un projet, il n'y a aucune sécurité.
 Soit le dépôt Git est disponible sans restriction en lecture, soit il n'est pas publié.
 Cela signifie qu'il ne permet pas de pousser des modifications.
 Vous pouvez activer la capacité à pousser mais étant donné l'absence d'authentification, n'importe qui sur Internet ayant trouvé l'URL du projet peut pousser sur le dépôt.
@@ -514,7 +515,7 @@ Il faut donc installer le paquet Python setuptools qu'Ubuntu fournit en tant que
 
 Ensuite, il faut cloner et installer Gitosis à partir du site principal du projet :
 
-	$ git clone git://eagain.net/gitosis.git
+	$ git clone https://github.com/tv42/gitosis.git
 	$ cd gitosis
 	$ sudo python setup.py install
 
@@ -982,7 +983,7 @@ Nous allons détailler comment faire.
 ### Création d'un compte utilisateur ###
 
 La première chose à faire, c'est de créer un compte utilisateur gratuit.
-Visitez la page « Plans & Pricing » (plans et prix) à `http://github.com/plans` et cliquez sur le bouton « Create a free account » (créer un compte gratuit) de la zone  « Free for open source » (gratuit pour l'open source) (voir figure 4-2) qui vous amène à la page d'enregistrement.
+Visitez la page « Plans and pricing » (plans et prix) à `https://github.com/pricing` et cliquez sur le bouton « Create a free account » (créer un compte gratuit) de la zone  « Free for open source » (gratuit pour l'open source) (voir figure 4-2) qui vous amène à la page d'enregistrement.
 
 Insert 18333fig0402.png
 Figure 4-2. La page des différents plans de GitHub.

@@ -55,10 +55,10 @@ Git 使用的传输协议中最常见的可能就是 SSH 了。这是因为大�
 	$ git clone ssh://user@server/project.git
 
 或者不指明某个协议 — 这时 Git 会默认使用 SSH ：
-	
+
 	$ git clone user@server:project.git
 
-如果不指明用户，Git 会默认使用当前登录的用户名连接服务器。 
+如果不指明用户，Git 会默认使用当前登录的用户名连接服务器。
 
 #### 优点 ####
 
@@ -70,7 +70,7 @@ SSH 的限制在于你不能通过它实现仓库的匿名访问。即使仅为�
 
 ### Git 协议 ###
 
-接下来是 Git 协议。这是一个包含在 Git 软件包中的特殊守护进程； 它会监听一个提供类似于 SSH 服务的特定端口（9418），而无需任何授权。打算支持 Git 协议的仓库，需要先创建 `git-export-daemon-ok` 文件 — 它是协议进程提供仓库服务的必要条件 — 但除此之外该服务没有什么安全措施。要么所有人都能克隆 Git 仓库，要么谁也不能。这也意味着该协议通常不能用来进行推送。你可以允许推送操作；然而由于没有授权机制，一旦允许该操作，网络上任何一个知道项目 URL 的人将都有推送权限。不用说，这是十分罕见的情况。
+接下来是 Git 协议。这是一个包含在 Git 软件包中的特殊守护进程； 它会监听一个提供类似于 SSH 服务的特定端口（9418），而无需任何授权。打算支持 Git 协议的仓库，需要先创建 `git-daemon-export-ok` 文件 — 它是协议进程提供仓库服务的必要条件 — 但除此之外该服务没有什么安全措施。要么所有人都能克隆 Git 仓库，要么谁也不能。这也意味着该协议通常不能用来进行推送。你可以允许推送操作；然而由于没有授权机制，一旦允许该操作，网络上任何一个知道项目 URL 的人将都有推送权限。不用说，这是十分罕见的情况。
 
 #### 优点 ####
 
@@ -78,7 +78,8 @@ Git 协议是现存最快的传输协议。如果你在提供一个有很大访�
 
 #### 缺点 ####
 
-Git 协议消极的一面是缺少授权机制。用 Git 协议作为访问项目的唯一方法通常是不可取的。一般的做法是，同时提供 SSH 接口，让几个开发者拥有推送（写）权限，其他人通过 `git://` 拥有只读权限。Git 协议可能也是最难架设的协议。它要求有单独的守护进程，需要定制 — 我们将在本章的 “Gitosis” 一节详细介绍它的架设 — 需要设定 `xinetd` 或类似的程序，而这些工作就没那么轻松了。该协议还要求防火墙开放 9418 端口，而企业级防火墙一般不允许对这个非标准端口的访问。大型企业级防火墙通常会封锁这个少见的端口。
+Git 协议消极的一面是缺少授权机制。用 Git 协议作为访问项目的唯一方法通常是不可取的。一般的做法是，同时提供 SSH 接口，让几个开发者拥有推送（写）权限，其他人通过 `git://` 拥有只读权限。
+Git 协议可能也是最难架设的协议。它要求有单独的守护进程，需要定制 — 我们将在本章的 “Gitosis” 一节详细介绍它的架设 — 需要设定 `xinetd` 或类似的程序，而这些工作就没那么轻松了。该协议还要求防火墙开放 9418 端口，而企业级防火墙一般不允许对这个非标准端口的访问。大型企业级防火墙通常会封锁这个少见的端口。
 
 ### HTTP/S 协议 ###
 
@@ -115,7 +116,8 @@ HTTP 协议的消极面在于，相对来说客户端效率更低。克隆或者
 开始架设 Git 服务器前，需要先把现有仓库导出为裸仓库 — 即一个不包含当前工作目录的仓库。做法直截了当，克隆时用 `--bare` 选项即可。裸仓库的目录名一般以 `.git` 结尾，像这样：
 
 	$ git clone --bare my_project my_project.git
-	Initialized empty Git repository in /opt/projects/my_project.git/
+	Cloning into bare repository 'my_project.git'...
+	done.
 
 该命令的输出或许会让人有些不解。其实 `clone` 操作基本上相当于 `git init` 加 `git fetch`，所以这里出现的其实是 `git init` 的输出，先由它建立一个空目录，而之后传输数据对象的操作并无任何输出，只是悄悄在幕后执行。现在 `my_project.git` 目录中已经有了一份 Git 目录数据的副本。
 
@@ -165,7 +167,8 @@ HTTP 协议的消极面在于，相对来说客户端效率更低。克隆或者
 
 ## 生成 SSH 公钥 ##
 
-大多数 Git 服务器都会选择使用 SSH 公钥来进行授权。系统中的每个用户都必须提供一个公钥用于授权，没有的话就要生成一个。生成公钥的过程在所有操作系统上都差不多。首先先确认一下是否已经有一个公钥了。SSH 公钥默认储存在账户的主目录下的 `~/.ssh` 目录。进去看看：
+大多数 Git 服务器都会选择使用 SSH 公钥来进行授权。系统中的每个用户都必须提供一个公钥用于授权，没有的话就要生成一个。生成公钥的过程在所有操作系统上都差不多。
+首先先确认一下是否已经有一个公钥了。SSH 公钥默认储存在账户的主目录下的 `~/.ssh` 目录。进去看看：
 
 	$ cd ~/.ssh
 	$ ls
@@ -174,11 +177,11 @@ HTTP 协议的消极面在于，相对来说客户端效率更低。克隆或者
 
 关键是看有没有用 `something` 和 `something.pub` 来命名的一对文件，这个 `something` 通常就是 `id_dsa` 或 `id_rsa`。有 `.pub` 后缀的文件就是公钥，另一个文件则是密钥。假如没有这些文件，或者干脆连 `.ssh` 目录都没有，可以用 `ssh-keygen` 来创建。该程序在 Linux/Mac 系统上由 SSH 包提供，而在 Windows 上则包含在 MSysGit 包里：
 
-	$ ssh-keygen 
+	$ ssh-keygen
 	Generating public/private rsa key pair.
-	Enter file in which to save the key (/Users/schacon/.ssh/id_rsa): 
-	Enter passphrase (empty for no passphrase): 
-	Enter same passphrase again: 
+	Enter file in which to save the key (/Users/schacon/.ssh/id_rsa):
+	Enter passphrase (empty for no passphrase):
+	Enter same passphrase again:
 	Your identification has been saved in /Users/schacon/.ssh/id_rsa.
 	Your public key has been saved in /Users/schacon/.ssh/id_rsa.pub.
 	The key fingerprint is:
@@ -188,7 +191,7 @@ HTTP 协议的消极面在于，相对来说客户端效率更低。克隆或者
 
 现在，所有做过这一步的用户都得把它们的公钥给你或者 Git 服务器的管理员（假设 SSH 服务被设定为使用公钥机制）。他们只需要复制 `.pub` 文件的内容然后发邮件给管理员。公钥的样子大致如下：
 
-	$ cat ~/.ssh/id_rsa.pub 
+	$ cat ~/.ssh/id_rsa.pub
 	ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAklOUpkDHrfHY17SbrmTIpNLTGK9Tjom/BWDSU
 	GPl+nafzlHDTYW7hdI4yZ5ew18JH4JW9jbhUFrviQzM7xlELEVf4h9lFX5QVkbPppSwg0cda3
 	Pbv7kOdJ/MTyBlWXFCR+HAo3FXRitBqxiX1nKhXpHAZsMciLq8V6RjsNAQwdsdMFvSlVK/7XA
@@ -243,6 +246,7 @@ HTTP 协议的消极面在于，相对来说客户端效率更低。克隆或者
 这样，其他人的克隆和推送也一样变得很简单：
 
 	$ git clone git@gitserver:/opt/git/project.git
+	$ cd project
 	$ vim README
 	$ git commit -am 'fix for the README file'
 	$ git push origin master
@@ -279,12 +283,17 @@ HTTP 协议的消极面在于，相对来说客户端效率更低。克隆或者
 	$ mv hooks/post-update.sample hooks/post-update
 	$ chmod a+x hooks/post-update
 
-如果用的是 Git 1.6 之前的版本，则可以省略 `mv` 命令 — Git 是从较晚的版本才开始在挂钩实例的结尾添加 .sample 后缀名的。
-
 `post-update` 挂钩是做什么的呢？其内容大致如下：
 
-	$ cat .git/hooks/post-update 
+	$ cat .git/hooks/post-update
 	#!/bin/sh
+	#
+	# An example hook script to prepare a packed repository for use over
+	# dumb transports.
+	#
+	# To enable this hook, rename this file to "post-update".
+	#
+
 	exec git-update-server-info
 
 意思是当通过 SSH 向服务器推送时，Git 将运行这个 `git-update-server-info` 命令来更新匿名 HTTP 访问获取数据时所需要的文件。
@@ -314,7 +323,7 @@ HTTP 协议的消极面在于，相对来说客户端效率更低。克隆或者
 
 现在我们的项目已经有了可读可写和只读的连接方式，不过如果能有一个简单的 web 界面访问就更好了。Git 自带一个叫做 GitWeb 的 CGI 脚本，运行效果可以到 `http://git.kernel.org` 这样的站点体验下（见图 4-1）。
 
-Insert 18333fig0401.png 
+Insert 18333fig0401.png
 Figure 4-1. 基于网页的 GitWeb 用户界面
 
 如果想看看自己项目的效果，不妨用 Git 自带的一个命令，可以使用类似 `lighttpd` 或 `webrick` 这样轻量级的服务器启动一个临时进程。如果是在 Linux 主机上，通常都预装了 `lighttpd` ，可以到项目目录中键入 `git instaweb` 来启动。如果用的是 Mac ，Leopard 预装了 Ruby，所以 `webrick` 应该是最好的选择。如果要用 lighttpd 以外的程序来启动 `git instaweb`，可以通过 `--httpd` 选项指定：
@@ -332,7 +341,7 @@ Figure 4-1. 基于网页的 GitWeb 用户界面
 	$ git clone git://git.kernel.org/pub/scm/git/git.git
 	$ cd git/
 	$ make GITWEB_PROJECTROOT="/opt/git" \
-	        prefix=/usr gitweb/gitweb.cgi
+	        prefix=/usr gitweb
 	$ sudo cp -Rf gitweb /var/www/
 
 注意，通过指定 `GITWEB_PROJECTROOT` 变量告诉编译命令 Git 仓库的位置。然后，设置 Apache 以 CGI 方式运行该脚本，添加一个 VirtualHost 配置：
@@ -366,7 +375,7 @@ Gitosis 的工作依赖于某些 Python 工具，所以首先要安装 Python �
 
 接下来，从 Gitosis 项目主页克隆并安装：
 
-	$ git clone git://eagain.net/gitosis.git
+	$ git clone https://github.com/tv42/gitosis.git
 	$ cd gitosis
 	$ sudo python setup.py install
 
@@ -400,7 +409,7 @@ Gitosis 将会帮我们管理用户公钥，所以先把当前控制文件改名
 
 	$ ssh git@gitserver
 	PTY allocation request failed on channel 0
-	fatal: unrecognized command 'gitosis-serve schacon@quaternion'
+	ERROR:gitosis.serve.main:Need SSH_ORIGINAL_COMMAND in environment.
 	  Connection to gitserver closed.
 
 说明 Gitosis 认出了该用户的身份，但由于没有运行任何 Git 命令，所以它切断了连接。那么，现在运行一个实际的 Git 命令 — 克隆 Gitosis 的控制仓库：
@@ -420,32 +429,32 @@ Gitosis 将会帮我们管理用户公钥，所以先把当前控制文件改名
 
 看一下 `gitosis.conf` 文件的内容，它应该只包含与刚刚克隆的 `gitosis-admin` 相关的信息：
 
-	$ cat gitosis.conf 
+	$ cat gitosis.conf
 	[gitosis]
 
 	[group gitosis-admin]
-	writable = gitosis-admin
 	members = scott
+	writable = gitosis-admin
 
 它显示用户 `scott` — 初始化 Gitosis 公钥的拥有者 — 是唯一能管理 `gitosis-admin` 项目的人。
 
 现在我们来添加一个新项目。为此我们要建立一个名为 `mobile` 的新段落，在其中罗列手机开发团队的开发者，以及他们拥有写权限的项目。由于 'scott' 是系统中的唯一用户，我们把他设为唯一用户，并允许他读写名为 `iphone_project` 的新项目：
 
 	[group mobile]
-	writable = iphone_project
 	members = scott
+	writable = iphone_project
 
 修改完之后，提交 `gitosis-admin` 里的改动，并推送到服务器使其生效：
 
 	$ git commit -am 'add iphone_project and mobile group'
-	[master]: created 8962da8: "changed name"
-	 1 files changed, 4 insertions(+), 0 deletions(-)
-	$ git push
+	[master 8962da8] add iphone_project and mobile group
+	 1 file changed, 4 insertions(+)
+	$ git push origin master
 	Counting objects: 5, done.
-	Compressing objects: 100% (2/2), done.
-	Writing objects: 100% (3/3), 272 bytes, done.
-	Total 3 (delta 1), reused 0 (delta 0)
-	To git@gitserver:/opt/git/gitosis-admin.git
+	Compressing objects: 100% (3/3), done.
+	Writing objects: 100% (3/3), 272 bytes | 0 bytes/s, done.
+	Total 3 (delta 0), reused 0 (delta 0)
+	To git@gitserver:gitosis-admin.git
 	   fb27aec..8962da8  master -> master
 
 在新工程 `iphone_project` 里首次推送数据到服务器前，得先设定该服务器地址为远程仓库。但你不用事先到服务器上手工创建该项目的裸仓库— Gitosis 会在第一次遇到推送时自动创建：
@@ -454,7 +463,7 @@ Gitosis 将会帮我们管理用户公钥，所以先把当前控制文件改名
 	$ git push origin master
 	Initialized empty Git repository in /opt/git/iphone_project.git/
 	Counting objects: 3, done.
-	Writing objects: 100% (3/3), 230 bytes, done.
+	Writing objects: 100% (3/3), 230 bytes | 0 bytes/s, done.
 	Total 3 (delta 0), reused 0 (delta 0)
 	To git@gitserver:iphone_project.git
 	 * [new branch]      master -> master
@@ -470,20 +479,20 @@ Gitosis 将会帮我们管理用户公钥，所以先把当前控制文件改名
 然后把他们都加进 'mobile' 团队，让他们对 `iphone_project` 具有读写权限：
 
 	[group mobile]
-	writable = iphone_project
 	members = scott john josie jessica
+	writable = iphone_project
 
 如果你提交并推送这个修改，四个用户将同时具有该项目的读写权限。
 
 Gitosis 也具有简单的访问控制功能。如果想让 John 只有读权限，可以这样做：
 
 	[group mobile]
-	writable = iphone_project
 	members = scott josie jessica
+	writable = iphone_project
 
 	[group mobile_ro]
-	readonly = iphone_project
 	members = john
+	readonly = iphone_project
 
 现在 John 可以克隆和获取更新，但 Gitosis 不会允许他向项目推送任何内容。像这样的组可以随意创建，多少不限，每个都可以包含若干不同的用户和项目。甚至还可以指定某个组为成员之一（在组名前加上 `@` 前缀），自动继承该组的成员：
 
@@ -491,106 +500,82 @@ Gitosis 也具有简单的访问控制功能。如果想让 John 只有读权限
 	members = scott josie jessica
 
 	[group mobile]
-	writable  = iphone_project
 	members   = @mobile_committers
+	writable  = iphone_project
 
 	[group mobile_2]
-	writable  = another_iphone_project
 	members   = @mobile_committers john
+	writable  = another_iphone_project
 
 如果遇到意外问题，试试看把 `loglevel=DEBUG` 加到 `[gitosis]` 的段落（译注：把日志设置为调试级别，记录更详细的运行信息。）。如果一不小心搞错了配置，失去了推送权限，也可以手工修改服务器上的 `/home/git/.gitosis.conf` 文件 — Gitosis 实际是从该文件读取信息的。它在得到推送数据时，会把新的 `gitosis.conf` 存到该路径上。所以如果你手工编辑该文件的话，它会一直保持到下次向 `gitosis-admin` 推送新版本的配置内容为止。
 
 ## Gitolite ##
 
-注：本书此段落的最新拷贝始终存在于[gitolite documentation][gldpg].  作者谦虚地表示，尽管这个段落是精确的，可以（已经）用于安装gitolite而不用阅读其他的文档，但仍有必要不完整，并且不能完全替代随gitolite自带的大量文档。
+本节作为Gitolite的一个快速指南，指导基本的安装和设置。不能完全替代随Gitolite自带的大量文档。而且可能会随时改变本节内容，因此你也许想看看最新的[版本][gldpg]。
 
 [gldpg]: http://sitaramc.github.com/gitolite/progit.html
+[gltoc]: http://sitaramc.github.com/gitolite/master-toc.html
 
-Git已经变成了非常流行的写作环境，并倾向于为了访问控制而增加额外的需求。Gitolite用于帮助这些需求而创建，但它变成了对开源世界同样有用的东西：Fedora项目使用gitolite控制访问他们的包管理仓库 (超过 10,000个包！) , 而且这也可能是最大的gitolite装置。
+Gitolite是在Git之上的一个授权层，依托`sshd`或者`httpd`来进行认证。（概括：认证是确定用户是谁，授权是决定该用户是否被允许做他想做的事情）。
 
-Gitolite 允许你定义访问许可而不只作用于仓库，而同样于仓库中的每个branch和tag name。你可以定义确切的人 (或一组人) 只能push特定的 "refs" (或者branches或者tags)而不是其他人。
+Gitolite允许你定义访问许可而不只作用于仓库，而同样于仓库中的每个branch和tag name。你可以定义确切的人(或一组人)只能push特定的"refs"(或者branches或者tags)而不是其他人。
 
 ### 安装 ###
 
-安装 Gitolite非常简单, 你甚至不用读自带的那一大堆文档。你需要一个unix服务器上的账户；许多linux变种和solaris 10都已经试过了。你不需要root访问，假设git，perl，和一个openssh兼容的ssh服务器已经装好了。在下面的例子里，我们会用 `gitolite` 账户在 `gitserver`上.
+安装Gitolite非常简单, 你甚至不用读自带的那一大堆文档。你需要一个unix服务器上的账户；许多linux变种和solaris 10都已经试过了。你不需要root访问，假设git，perl，和一个openssh兼容的ssh服务器已经装好了。在下面的例子里，我们会用`git`账户在`gitserver`进行。
 
-Gitolite 是不同于 "server" 的软件 -- 通过ssh访问, 而且每个在服务器上的userid都是一个潜在的 "gitolite host". 因此,  "安装" 这个软件的概念意味着安装它自身, 然后"设置" 一个用户作为 "gitolite host".
+Gitolite是不同于“服务”的软件 -- 其通过ssh访问, 而且每个在服务器上的userid都是一个潜在的“gitolite主机”。我们在这里描述最简单的安装方法，对于其他方法，请参考其文档。
 
-Gitolite 有4种安装方法。用 Fedora 或 Debian 的人可以获取一个 RPM或者 DEB安装。有root权限的人可以手动安装。在这两种方法中，任意系统上的用户变成一个 "gitolite host"。
-
-没有 root访问权限的人可以安装在他们自己的 userid 下面。最后，gitolite可以用一个“工作站上”的脚本在bash shell安装。(如果你想的话甚至msysgit带的bash就可以。)
-
-我们要描述这个最后一个方法；其他方法请看文档。
-
-首先你要获取一个访问服务器的公钥，你可以从你自己的工作站部属密码访问服务器。下面的方法在linux上管用；其他的工作站系统你可以手动做这些事。我们假设你已经用'ssh-keygen'生成了一对密钥。
-
-	$ ssh-copy-id -i ~/.ssh/id_rsa gitolite@gitserver
-
-这会要你 gitolite账户的密码，然后设置公钥访问。这个对安装脚本非常 **重要**，所以试一下保证你可以不输密码：
-
-	$ ssh gitolite@gitserver pwd
-	/home/gitolite
-
-接下俩，你 clone Gitolite从项目的主目录运行 "easy install" 脚本 (第三个参数是你的作为 gitolite-admin仓库用户的名字):
+开始，在你的服务器上创建一个名为`git`的用户，然后以这个用户登录。从你的工作站拷贝你的SSH公钥（也就是你用`ssh-keygen`默认生成的`~/.ssh/id_dsa.pub`文件），重命名为`<yourname>.pub`（我们这里使用`scott.pub`作为例子）。然后执行下面的命令：
 
 	$ git clone git://github.com/sitaramc/gitolite
-	$ cd gitolite/src
-	$ ./gl-easy-install -q gitolite gitserver sitaram
+	$ gitolite/install -ln
+	    # assumes $HOME/bin exists and is in your $PATH
+	$ gitolite setup -pk $HOME/scott.pub
 
-然后就完成了！Gitolite已经在服务器上装好了，现在你有一个全新的仓库叫做 `gitolite-admin` 在你工作站的 home目录。你管理你的 gitolite 安装通过改变这个项目和push。
+最后一个命令在服务器上创建了一个名为`gitolite-admin`的Git仓库。
 
-最后的命令产生大量的输出，你可能想读一下。而且你第一次运行的时候会产生一对新密钥；你会选择密码或者什么都不输。为什么需要第二个密钥对以及怎么用在Gitolite带的 "ssh troubleshooting" 文件里解释了。 (文档肯定有点什么用！)
-
-叫做 `gitolite-admin` 和 `testing` 的仓库默认创建在服务器上。如果你想在本地 clone这些 (从一个有ssh控制台 gitolite通过 *authorized_keys*访问的用户)，输入：
-
-	$ git clone gitolite:gitolite-admin
-	$ git clone gitolite:testing
-	
-clone 这些同样的仓库从任意其他账户：
-
-	$ git clone gitolite@servername:gitolite-admin
-	$ git clone gitolite@servername:testing
-
+最后，回到你的工作站，执行`git clone git@gitserver:gitolite-admin`。然后你就完成了！Gitolite现在已经安装在了服务器上，在你的工作站上，你也有一个名为`gitolite-admin`的新仓库。你可用通过更改这个仓库以及推送到服务器上来管理你的Gitolite配置。
 
 ### 定制安装 ###
 
-默认快速安装对大多数人都管用，还有一些定制安装方法如果你用的上的话。如果你不用 `-q` 参数，则用 "罗嗦" 模式安装 -- 详细信息关于安装的每一步都在做什么。 罗嗦模式也允许你改变服务器端参数，诸如实际仓库的位置，通过编辑服务器使用的 "rc" 文件。这个 "rc" 有好多注释让你编辑的时候变得非常简单，保存退出。这个文件也包括了许多设置你能改变来启用或者禁用一些gitolite的高级功能。
+默认快速安装对大多数人都管用，还有一些定制安装方法如果你用的上的话。一些设置可以通过编辑rc文件来简单地改变，但是如果这个不够，有关于定制Gitolite的文档供参考。
 
 ### 配置文件和访问规则 ###
 
-安装结束后，你切换到 `gitolite-admin` 仓库 (放在你的 HOME 目录) 然后看看都有啥：
+安装结束后，你切换到`gitolite-admin`仓库（放在你的HOME目录）然后看看都有啥：
 
 	$ cd ~/gitolite-admin/
 	$ ls
 	conf/  keydir/
 	$ find conf keydir -type f
 	conf/gitolite.conf
-	keydir/sitaram.pub
+	keydir/scott.pub
 	$ cat conf/gitolite.conf
-	#gitolite conf
-	# please see conf/example.conf for details on syntax and features
 
 	repo gitolite-admin
-	    RW+                 = sitaram
+	    RW+                 = scott
 
 	repo testing
 	    RW+                 = @all
 
-注意 "sitaram" ( 之前用`gl-easy-install` 命令时候的最后一个参数) 有读写权限而且在 `gitolite-admin` 仓库里有一个同名的公钥文件。
+注意 "scott" ( 之前用`gl-setup` 命令时候的 pubkey 名稱) 有读写权限而且在 `gitolite-admin` 仓库里有一个同名的公钥文件。
 
-gitolite配置文件的语法在 `conf/example.conf`里，我们只会提到一些主要的。
+添加用户很简单。为了添加一个名为`alice`的用户，获取她的公钥，命名为`alice.pub`，然后放到在你工作站上的`gitolite-admin`克隆的`keydir`目录。添加，提交，然后推送更改。这样用户就被添加了。
 
-你可以给用户或者仓库分组。分组名就像一些宏；定义的时候，无所谓他们是工程还是用户；区别在于你’使用‘“宏”的时候
+gitolite配置文件的语法在`conf/example.conf`里，我们只会提到一些主要的。
+
+你可以给用户或者仓库分组。分组名就像一些宏；定义的时候，无所谓他们是工程还是用户；区别在于你*使用*“宏”的时候
 
 	@oss_repos      = linux perl rakudo git gitolite
 	@secret_repos   = fenestra pear
 
-	@admins         = scott     # Adams, not Chacon, sorry :)
-	@interns        = ashok     # get the spelling right, Scott!
+	@admins         = scott
+	@interns        = ashok
 	@engineers      = sitaram dilbert wally alice
 	@staff          = @admins @engineers @interns
 
-你可以控制许可在 "ref" 级别。在下面的例子里，实习生可以 push "int" branch.  工程师可以 push任何有 "eng-"开头的branch，还有refs/tags下面用 "rc"开头的后面跟数字的。而且管理员可以随便改 (包括rewind) 对任何参考名.
+你可以控制许可在”ref“级别。在下面的例子里，实习生可以push ”int“分支。工程师可以push任何有"eng-"开头的branch，还有refs/tags下面用"rc"开头的后面跟数字的。而且管理员可以随便更改(包括rewind)对任何参考名。
 
 	repo @oss_repos
 	    RW  int$                = @interns
@@ -598,11 +583,11 @@ gitolite配置文件的语法在 `conf/example.conf`里，我们只会提到一�
 	    RW  refs/tags/rc[0-9]   = @engineers
 	    RW+                     = @admins
 
-在 `RW` or `RW+`之后的表达式是正则表达式 (regex) 对应着后面的push用的参考名字 (ref) 。所以我们叫它 "参考正则"（refex）！当然，一个 refex 可以比这里表现的更强大，所以如果你对perl的正则表达式不熟的话就不要改过头。
+在`RW`or`RW+`之后的表达式是正则表达式(regex)对应着后面的push用的参考名字(ref)。所以我们叫它”参考正则“（refex）！当然，一个refex可以比这里表现的更强大，所以如果你对perl的正则表达式不熟的话就不要改过头。
 
-同样，你可能猜到了，Gitolite 字头 `refs/heads/` 是一个便捷句法如果参考正则没有用 `refs/`开头。
+同样，你可能猜到了，Gitolite字头`refs/heads/`是一个便捷句法如果参考正则没有用`refs/`开头。
 
-一个这个配置文件语法的重要功能是，所有的仓库的规则不需要在同一个位置。你能报所有普通的东西放在一起，就像上面的对所有 `oss_repos` 的规则那样，然后建一个特殊的规则对后面的特殊案例，就像：
+一个这个配置文件语法的重要功能是，所有的仓库的规则不需要在同一个位置。你能报所有普通的东西放在一起，就像上面的对所有`oss_repos`的规则那样，然后建一个特殊的规则对后面的特殊案例，就像：
 
 	repo gitolite
 	    RW+                     = sitaram
@@ -613,46 +598,44 @@ gitolite配置文件的语法在 `conf/example.conf`里，我们只会提到一�
 
 在gitolite里有两级访问控制。第一是在仓库级别；如果你已经读或者写访问过了任何在仓库里的参考，那么你已经读或者写访问仓库了。
 
-第二级，应用只能写访问，通过在仓库里的 branch或者 tag。用户名如果尝试过访问 (`W` 或 `+`)，参考名被更新为已知。访问规则检查是否出现在配置文件里，为这个联合寻找匹配 (但是记得参考名是正则匹配的，不是字符串匹配的)。如果匹配被找到了，push就成功了。不匹配的访问会被拒绝。
+第二级，应用只能写访问，通过在仓库里的branch或者tag。用户名如果尝试过访问 (`W`或`+`)，参考名被更新为已知。访问规则检查是否出现在配置文件里，为这个联合寻找匹配 (但是记得参考名是正则匹配的，不是字符串匹配的)。如果匹配被找到了，push就成功了。不匹配的访问会被拒绝。
 
 ### 带'拒绝'的高级访问控制 ###
 
-目前，我们只看过了许可是 `R`, `RW`, 或者 `RW+`这样子的。但是gitolite还允许另外一种许可：`-`，代表 "拒绝"。这个给了你更多的能力，当然也有一点复杂，因为不匹配并不是唯一的拒绝访问的方法，因此规则的顺序变得无关了！
+目前，我们只看过了许可是`R`,`RW`, 或者`RW+`这样子的。但是gitolite还允许另外一种许可：`-`，代表 ”拒绝“。这个给了你更多的能力，当然也有一点复杂，因为不匹配并不是唯一的拒绝访问的方法，因此规则的顺序变得无关了！
 
-这么说好了，在前面的情况中，我们想要工程师可以 rewind 任意 branch 除了master和 integ。 这里是如何做到的
+这么说好了，在前面的情况中，我们想要工程师可以rewind任意branch除了master和integ。 这里是如何做到的
 
 	    RW  master integ    = @engineers
 	    -   master integ    = @engineers
 	    RW+                 = @engineers
 
-你再一次简单跟随规则从上至下知道你找到一个匹配你的访问模式的，或者拒绝。非rewind push到 master或者 integ 被第一条规则允许。一个 rewind push到那些 refs不匹配第一条规则，掉到第二条，因此被拒绝。任何 push (rewind 或非rewind) 到参考或者其他 master 或者 integ不会被前两条规则匹配，即被第三条规则允许。
+你再一次简单跟随规则从上至下知道你找到一个匹配你的访问模式的，或者拒绝。非rewind push到master或者integ 被第一条规则允许。一个rewind push到那些refs不匹配第一条规则，掉到第二条，因此被拒绝。任何push(rewind或非rewind)到参考或者其他master或者integ不会被前两条规则匹配，即被第三条规则允许。
 
 ### 通过改变文件限制 push ###
 
-此外限制用户 push改变到哪条branch的，你也可以限制哪个文件他们可以碰的到。比如, 可能 Makefile (或者其他哪些程序) 真的不能被任何人做任何改动，因为好多东西都靠着它呢，或者如果某些改变刚好不对就会崩溃。你可以告诉 gitolite:
+此外限制用户push改变到哪条branch的，你也可以限制哪个文件他们可以碰的到。比如, 可能Makefile (或者其他哪些程序) 真的不能被任何人做任何改动，因为好多东西都靠着它呢，或者如果某些改变刚好不对就会崩溃。你可以告诉 gitolite:
 
     repo foo
-        RW                  =   @junior_devs @senior_devs
+        RW                      =   @junior_devs @senior_devs
 
-        RW  NAME/           =   @senior_devs
-        -   NAME/Makefile   =   @junior_devs
-        RW  NAME/           =   @junior_devs
+        -   VREF/NAME/Makefile  =   @junior_devs
 
 这是一个强力的公能写在 `conf/example.conf`里。
 
 ### 个人分支 ###
 
-Gitolite 也支持一个叫 "个人分支"的功能 (或者叫, "个人分支命名空间") 在合作环境里非常有用。
+Gitolite也支持一个叫”个人分支“的功能 (或者叫, ”个人分支命名空间“) 在合作环境里非常有用。
 
-在 git世界里许多代码交换通过 "pull" 请求发生。然而在合作环境里，委任制的访问是‘绝不’，一个开发者工作站不能认证，你必须push到中心服务器并且叫其他人从那里pull。
+在 git世界里许多代码交换通过”pull“请求发生。然而在合作环境里，委任制的访问是‘绝不’，一个开发者工作站不能认证，你必须push到中心服务器并且叫其他人从那里pull。
 
-这个通常会引起一些 branch 名称簇变成像 VCS里一样集中化，加上设置许可变成管理员的苦差事。
+这个通常会引起一些branch名称簇变成像 VCS里一样集中化，加上设置许可变成管理员的苦差事。
 
-Gitolite让你定义一个 "个人的" 或者 "乱七八糟的" 命名空间字首给每个开发人员 (比如，`refs/personal/<devname>/*`)；看在 `doc/3-faq-tips-etc.mkd`里的 "personal branches" 一段获取细节。
+Gitolite让你定义一个”个人的“或者”乱七八糟的”命名空间字首给每个开发人员(比如，`refs/personal/<devname>/*`)；看在`doc/3-faq-tips-etc.mkd`里的"personal branches"一段获取细节。
 
 ### "通配符" 仓库 ###
 
-Gitolite 允许你定义带通配符的仓库 (其实还是 perl正则式), 比如随便整个例子的话 `assignments/s[0-9][0-9]/a[0-9][0-9]`。 这是一个非常有用的功能，需要通过设置 `$GL_WILDREPOS = 1;` 在 rc文件中启用。允许你安排一个新许可模式 ("C") 允许用户创建仓库基于通配符，自动分配拥有权对特定用户 - 创建者，允许他交出 R和 RW许可给其他合作用户等等。这个功能在`doc/4-wildcard-repositories.mkd`文档里
+Gitolite 允许你定义带通配符的仓库(其实还是perl正则式), 比如随便整个例子的话`assignments/s[0-9][0-9]/a[0-9][0-9]`。 这是一个非常有用的功能，需要通过设置`$GL_WILDREPOS = 1;` 在 rc文件中启用。允许你安排一个新许可模式("C")允许用户创建仓库基于通配符，自动分配拥有权对特定用户 - 创建者，允许他交出 R和 RW许可给其他合作用户等等。这个功能在`doc/4-wildcard-repositories.mkd`文档里
 
 ### 其他功能 ###
 
@@ -660,12 +643,10 @@ Gitolite 允许你定义带通配符的仓库 (其实还是 perl正则式), 比�
 
 **记录**: Gitolite 记录所有成功的访问。如果你太放松给了别人 rewind许可 (`RW+`) 和其他孩子弄没了 "master"， 记录文件会救你的命，如果其他简单快速的找到SHA都不管用。
 
-**Git在通常路径外**: 一个在gitolite里的超级有用的简单功能是支持git安装在通常的 `$PATH`之外 (这个比你想象的还要寻常；一些合作环境或者甚至一些主机提供商拒绝安装系统范围外的东西你只能放在自己的目录里)。通常，你被强迫用 *客户端* 用某种方法找到git 为这个非标准的位置。使用 gitolite，只要选择絮叨安装设置 `$GIT_PATH`在 "rc" 文件里。不用改变客户端然后 :-)。
-
 **访问权报告**: 另一个方便的功能是你尝试用ssh连接到服务器的时候发生了什么。Gitolite告诉你哪个 repos你访问过，那个访问可能是什么。这里是例子：
 
-        hello sitaram, the gitolite version here is v1.5.4-19-ga3397d4
-        the gitolite config gives you the following access:
+        hello scott, this is git@git running gitolite3 v3.01-18-g9609868 on git 1.7.4.4
+
              R     anu-wsd
              R     entrans
              R  W  git-notes
@@ -675,8 +656,6 @@ Gitolite 允许你定义带通配符的仓库 (其实还是 perl正则式), 比�
              R     shreelipi_converter
 
 **委托**：真正的大安装，你可以把责任委托给一组仓库给不同的人然后让他们独立管理那些部分。这个减少了主管理者的负担，让他瓶颈更小。这个功能在他自己的文档目录里的 `doc/`下面。
-
-**Gitweb 支持**： Gitolite支持 gitweb以几种方式。你可以定义哪个仓库在gitweb可见。你能设置 "拥有者" 和 "描述" gitweb 从 gitolite配置文件里。Gitweb 有一个机制给你来实现基于http认证的访问控制，你能让它用 gitolite产生的 "编译过" 的配置文件，意思是同样的访问规则 (为读访问) 用于 gitweb和 gitolite.
 
 **镜像**: Gitolite可以帮助你维护多个镜像，如果主服务器挂掉的话在他们之间很容易切换。
 
@@ -764,19 +743,20 @@ GitHub 同时也是一个向使用私有仓库的用户收取费用的商业公�
 
 ### 建立新账户 ###
 
-首先注册一个免费账户。访问 Pricing and Signup 页面 `http://github.com/plans` 并点击 Free acount 里的 Sign Up 按钮（见图 4-2），进入注册页面。
+首先注册一个免费账户。访问 "Plans and pricing" 页面 `https://github.com/pricing` 并点击 Free acount 里的 Sign Up 按钮（见图 4-2），进入注册页面。
 
 Insert 18333fig0402.png
 图 4-2. GitHub 服务简介页面
 
 选择一个系统中尚未使用的用户名，提供一个与之相关联的电邮地址，并输入密码（见图 4-3）：
 
-Insert 18333fig0403.png 
+Insert 18333fig0403.png
 图 4-3. GitHub 用户注册表单
 
-如果方便，现在就可以提供你的 SSH 公钥。我们在前文的"小型安装" 一节介绍过生成新公钥的方法。把新生成的公钥复制粘贴到 SSH Public Key 文本框中即可。要是对生成公钥的步骤不太清楚，也可以点击 "explain ssh keys" 链接，会显示各个主流操作系统上完成该步骤的介绍。点击 "I agree，sign me up" 按钮完成用户注册，并转到该用户的 dashboard 页面（见图 4-4）:
+如果方便，现在就可以提供你的 SSH 公钥。我们在前文的"小型安装" 一节介绍过生成新公钥的方法。把新生成的公钥复制粘贴到 SSH Public Key 文本框中即可。要是对生成公钥的步骤不太清楚，也可以点击 "explain ssh keys" 链接，会显示各个主流操作系统上完成该步骤的介绍。
+点击 "I agree，sign me up" 按钮完成用户注册，并转到该用户的 dashboard 页面（见图 4-4）:
 
-Insert 18333fig0404.png 
+Insert 18333fig0404.png
 图 4-4. GitHub 的用户面板
 
 接下来就可以建立新仓库了。
@@ -785,17 +765,17 @@ Insert 18333fig0404.png
 
 点击用户面板上仓库旁边的 "create a new one" 链接，显示 Create a New Repository 的表单（见图 4-5）：
 
-Insert 18333fig0405.png 
+Insert 18333fig0405.png
 图 4-5. 在 GitHub 上建立新仓库
 
 当然，项目名称是必不可少的，此外也可以适当描述一下项目的情况或者给出官方站点的地址。然后点击 "Create Repository" 按钮，新仓库就建立起来了（见图 4-6）：
 
-Insert 18333fig0406.png 
+Insert 18333fig0406.png
 图 4-6. GitHub 上各个项目的概要信息
 
 由于尚未提交代码，点击项目地址后 GitHub 会显示一个简要的指南，告诉你如何新建一个项目并推送上来，如何从现有项目推送，以及如何从一个公共的 Subversion 仓库导入项目（见图 4-7）：
 
-Insert 18333fig0407.png 
+Insert 18333fig0407.png
 图 4-7. 新仓库指南
 
 该指南和本书前文介绍的类似，对于新的项目，需要先在本地初始化为 Git 项目，添加要管理的文件并作首次提交：
@@ -811,7 +791,7 @@ Insert 18333fig0407.png
 
 现在该项目就托管在 GitHub 上了。你可以把它的 URL 分享给每位对此项目感兴趣的人。本例的 URL 是 `http://github.com/testinguser/iphone_project`。而在项目页面的摘要部分，你会发现有两个 Git URL 地址（见图 4-8）：
 
-Insert 18333fig0408.png 
+Insert 18333fig0408.png
 图 4-8. 项目摘要中的公共 URL 和私有 URL
 
 Public Clone URL 是一个公开的，只读的 Git URL，任何人都可以通过它克隆该项目。可以随意散播这个 URL，比如发布到个人网站之类的地方等等。
@@ -822,7 +802,7 @@ Your Clone URL 是一个基于 SSH 协议的可读可写 URL，只有使用与�
 
 如果想把某个公共 Subversion 项目导入 Git，GitHub 可以帮忙。在指南的最后有一个指向导入 Subversion 页面的链接。点击它会看到一个表单，包含有关导入流程的信息以及一个用来粘贴公共 Subversion 项目连接的文本框（见图 4-9）：
 
-Insert 18333fig0409.png 
+Insert 18333fig0409.png
 图 4-9. Subversion 导入界面
 
 如果项目很大，采用非标准结构，或者是私有的，那就无法借助该工具实现导入。到第 7 章，我们会介绍如何手工导入复杂工程的具体方法。
@@ -833,7 +813,7 @@ Insert 18333fig0409.png
 
 点击项目页面上方的 "edit" 按钮或者顶部的 Admin 标签，进入该项目的管理页面（见图 4-10）：
 
-Insert 18333fig0410.png 
+Insert 18333fig0410.png
 图 4-10. GitHub 的项目管理页面
 
 为了给另一个用户添加项目的写权限，点击 "Add another collaborator" 链接，出现一个用于输入用户名的表单。在输入的同时，它会自动跳出一个符合条件的候选名单。找到正确用户名之后，点 Add 按钮，把该用户设为项目协作者（见图 4-11）：
@@ -843,7 +823,7 @@ Insert 18333fig0411.png
 
 添加完协作者之后，就可以在 Repository Collaborators 区域看到他们的名单（见图 4-12）：
 
-Insert 18333fig0412.png 
+Insert 18333fig0412.png
 图 4-12. 项目协作者名单
 
 如果要取消某人的访问权，点击 "revoke" 即可取消他的推送权限。对于将来的项目，你可以从现有项目复制协作者名单，或者直接借用协作者群组。
@@ -852,7 +832,7 @@ Insert 18333fig0412.png
 
 在推送或从 Subversion 导入项目之后，你会看到一个类似图 4-13 的项目主页：
 
-Insert 18333fig0413.png 
+Insert 18333fig0413.png
 图 4-13. GitHub 上的项目主页
 
 别人访问你的项目时看到的就是这个页面。它有若干导航标签，Commits 标签用于显示提交历史，最新的提交位于最上方，这和 `git log` 命令的输出类似。Network 标签展示所有派生了该项目并做出贡献的用户的关系图谱。Downloads 标签允许你上传项目的二进制文件，提供下载该项目各个版本的 tar/zip 包。Wiki 标签提供了一个用于撰写文档或其他项目相关信息的 wiki 站点。Graphs 标签包含了一些可视化的项目信息与数据。默认打开的 Source 标签页面，则列出了该项目的目录结构和概要信息，并在下方自动展示 README 文件的内容（如果该文件存在的话），此外还会显示最近一次提交的相关信息。
@@ -865,12 +845,12 @@ Insert 18333fig0413.png
 
 要派生一个项目，到原始项目的页面（本例中是 mojombo/chronic）点击 "fork" 按钮（见图 4-14）：
 
-Insert 18333fig0414.png 
+Insert 18333fig0414.png
 图 4-14. 点击 "fork" 按钮获得任意项目的可写副本
 
 几秒钟之后，你将进入新建的项目页面，会显示该项目派生自哪一个项目（见图 4-15）：
 
-Insert 18333fig0415.png 
+Insert 18333fig0415.png
 图 4-15. 派生后得到的项目副本
 
 ### GitHub 小结 ###
